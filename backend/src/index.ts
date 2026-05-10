@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 console.log('=== Server Starting ===');
 console.log('__dirname:', __dirname);
+console.log('cwd:', process.cwd());
 
 app.use(helmet());
 app.use(cors({
@@ -29,35 +30,42 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Find frontend path
+// Find frontend path - check many possible locations
 const possiblePaths = [
   path.join(__dirname, 'frontend', 'browser'),
   path.join(__dirname, '..', 'frontend', 'browser'),
+  path.join(__dirname, '..', '..', 'frontend', 'browser'),
   path.join(process.cwd(), 'frontend', 'browser'),
-  path.join(process.cwd(), '..', 'frontend', 'browser')
+  path.join(process.cwd(), '..', 'frontend', 'browser'),
+  '/opt/render/project/src/frontend/dist/loan-leads-frontend/browser',
+  '/opt/render/project/src/backend/dist/frontend/browser',
+  path.join(__dirname, '..', '..', 'frontend', 'dist', 'loan-leads-frontend', 'browser'),
 ];
 
 let frontendPath = '';
 for (const p of possiblePaths) {
   console.log('Checking:', p);
-  if (fs.existsSync(path.join(p, 'index.html'))) {
+  const indexPath = path.join(p, 'index.html');
+  if (fs.existsSync(indexPath)) {
     frontendPath = p;
-    console.log('Found frontend at:', frontendPath);
+    console.log('FOUND frontend at:', frontendPath);
     break;
   }
 }
 
 if (!frontendPath) {
-  console.log('ERROR: Frontend not found!');
+  console.log('ERROR: Frontend not found! Checking parent directories...');
+  const parentCheck = path.join(__dirname, '..', '..');
+  console.log('Parent contents:', fs.readdirSync(parentCheck));
 }
 
-app.use(express.static(frontendPath));
+app.use(express.static(frontendPath || path.join(__dirname, 'frontend', 'browser')));
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/') || req.path === '/health') {
     return res.status(404).json({ error: 'Not found' });
   }
-  res.sendFile(path.join(frontendPath, 'index.html'));
+  res.sendFile(path.join(frontendPath || path.join(__dirname, 'frontend', 'browser'), 'index.html'));
 });
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

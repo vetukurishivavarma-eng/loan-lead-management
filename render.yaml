@@ -3,16 +3,17 @@ services:
     name: loan-leads-backend
     env: node
     buildCommand: |
-      echo "Building frontend..."
-      cd frontend && npm install
-      ng build --configuration production
-      cd ..
-      echo "Copying frontend to backend..."
-      mkdir -p backend/dist/frontend
-      cp -r frontend/dist/loan-leads-frontend/browser backend/dist/frontend
-      ls -la backend/dist/frontend/
-      echo "Building backend..."
-      cd backend && npm install && npm run build
+      echo "=== Building from repo root ==="
+      pwd
+      ls -la
+      echo "=== Building frontend ==="
+      cd frontend && npm install && ng build --configuration production
+      echo "=== Copying frontend build to backend/dist/frontend ==="
+      mkdir -p ../backend/dist/frontend
+      cp -r dist/loan-leads-frontend/browser ../backend/dist/frontend
+      ls -la ../backend/dist/frontend/
+      echo "=== Building backend ==="
+      cd ../backend && npm install && npm run build
       ls -la dist/
     startCommand: cd backend && npm start
     envVars:
