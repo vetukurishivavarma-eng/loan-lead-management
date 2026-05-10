@@ -4,11 +4,13 @@ import * as leadsService from '../services/leads.service';
 
 export const getRunningLoans = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    console.log('Controller: Starting getRunningLoans');
     const loans = await leadsService.getRunningLoans();
+    console.log('Controller: Got loans:', loans.length);
     res.json(loans);
-  } catch (error) {
-    console.error('Error fetching running loans:', error);
-    res.status(500).json({ error: 'Failed to fetch running loans' });
+  } catch (error: any) {
+    console.error('Controller Error fetching running loans:', error);
+    res.status(500).json({ error: 'Failed to fetch running loans', details: error?.message });
   }
 };
 
