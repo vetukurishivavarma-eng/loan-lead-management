@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import authRoutes from './routes/auth.routes';
 import leadsRoutes from './routes/leads.routes';
 
@@ -11,7 +12,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Debug: log the directory
+console.log('=== Server Starting ===');
 console.log('__dirname:', __dirname);
 
 app.use(helmet());
@@ -28,13 +29,27 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.log(`${req.method} ${req.path} - Auth: ${req.headers.authorization?.substring(0, 20) || 'none'}...`);
-  next();
-});
+// Find frontend path
+const possiblePaths = [
+  path.join(__dirname, 'frontend', 'browser'),
+  path.join(__dirname, '..', 'frontend', 'browser'),
+  path.join(process.cwd(), 'frontend', 'browser'),
+  path.join(process.cwd(), '..', 'frontend', 'browser')
+];
 
-const frontendPath = path.join(__dirname, 'frontend', 'browser');
-console.log('Frontend path:', frontendPath);
+let frontendPath = '';
+for (const p of possiblePaths) {
+  console.log('Checking:', p);
+  if (fs.existsSync(path.join(p, 'index.html'))) {
+    frontendPath = p;
+    console.log('Found frontend at:', frontendPath);
+    break;
+  }
+}
+
+if (!frontendPath) {
+  console.log('ERROR: Frontend not found!');
+}
 
 app.use(express.static(frontendPath));
 
