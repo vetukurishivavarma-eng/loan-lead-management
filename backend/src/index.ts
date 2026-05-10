@@ -12,7 +12,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-console.log('=== Server Starting ===');
 console.log('__dirname:', __dirname);
 console.log('cwd:', process.cwd());
 
@@ -30,42 +29,42 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Find frontend path - check many possible locations
-const possiblePaths = [
-  path.join(__dirname, 'frontend', 'browser'),
-  path.join(__dirname, '..', 'frontend', 'browser'),
-  path.join(__dirname, '..', '..', 'frontend', 'browser'),
-  path.join(process.cwd(), 'frontend', 'browser'),
-  path.join(process.cwd(), '..', 'frontend', 'browser'),
-  '/opt/render/project/src/frontend/dist/loan-leads-frontend/browser',
-  '/opt/render/project/src/backend/dist/frontend/browser',
-  path.join(__dirname, '..', '..', 'frontend', 'dist', 'loan-leads-frontend', 'browser'),
-];
+// When startCommand is "cd backend && npm start", cwd = /opt/render/project/src/backend
+// __dirname = /opt/render/project/src/backend/dist
+// Frontend is at /opt/render/project/src/frontend/dist/loan-leads-frontend/browser
+// From __dirname: go up 2 levels to src, then down to frontend/dist/loan-leads-frontend/browser
 
-let frontendPath = '';
-for (const p of possiblePaths) {
-  console.log('Checking:', p);
-  const indexPath = path.join(p, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    frontendPath = p;
-    console.log('FOUND frontend at:', frontendPath);
-    break;
-  }
+let frontendPath = path.join(__dirname, '..', '..', 'frontend', 'dist', 'loan-leads-frontend', 'browser');
+console.log('Trying frontend path:', frontendPath);
+
+if (!fs.existsSync(path.join(frontendPath, 'index.html'))) {
+  // Try alternate - when copied to backend/dist/frontend
+  frontendPath = path.join(__dirname, 'frontend', 'browser');
+  console.log('Trying alternate:', frontendPath);
 }
 
-if (!frontendPath) {
-  console.log('ERROR: Frontend not found! Checking parent directories...');
-  const parentCheck = path.join(__dirname, '..', '..');
-  console.log('Parent contents:', fs.readdirSync(parentCheck));
+if (!fs.existsSync(path.join(frontendPath, 'index.html'))) {
+  // Fallback - check parent of backend
+  frontendPath = path.join(__dirname, '..', 'frontend', 'browser');
+  console.log('Trying parent:', frontendPath);
 }
 
-app.use(express.static(frontendPath || path.join(__dirname, 'frontend', 'browser')));
+if (!fs.existsSync(path.join(frontendPath, 'index.html'))) {
+  // Last try - frontend/browser in parent
+  frontendPath = path.join(process.cwd(), '..', 'frontend', 'dist', 'loan-leads-frontend', 'browser');
+  console.log('Trying cwd parent:', frontendPath);
+}
+
+console.log('Using frontend path:', frontendPath);
+console.log('index.html exists:', fs.existsSync(path.join(frontendPath, 'index.html')));
+
+app.use(express.static(frontendPath));
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/') || req.path === '/health') {
     return res.status(404).json({ error: 'Not found' });
   }
-  res.sendFile(path.join(frontendPath || path.join(__dirname, 'frontend', 'browser'), 'index.html'));
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
