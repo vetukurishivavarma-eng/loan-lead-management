@@ -24,6 +24,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.log(`${req.method} ${req.path} - Auth: ${req.headers.authorization?.substring(0, 20) || 'none'}...`);
+  next();
+});
+
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err.message);
   res.status(500).json({ error: err.message || 'Internal server error' });
