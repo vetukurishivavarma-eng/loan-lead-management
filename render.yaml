@@ -5,7 +5,7 @@ services:
     buildCommand: |
       cd frontend && npm install && ng build --configuration production && cd ..
       cd backend && mkdir -p dist/frontend
-      cp frontend/dist/loan-leads-frontend/browser dist/frontend/
+      cp -r ../frontend/dist/loan-leads-frontend/browser dist/frontend/
       ls -la dist/frontend/
       npm install && npm run build
     startCommand: cd backend && npm start
