@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:4200', 'http://localhost:3000', process.env.FRONTEND_URL],
+  origin: ['http://localhost:4200', 'http://localhost:3000', process.env.FRONTEND_URL].filter(Boolean) as string[],
   credentials: true
 }));
 app.use(express.json());
