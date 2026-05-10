@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
 
 export interface RunningLoan {
   id?: string;
@@ -42,35 +45,58 @@ export interface ExcelUploadResponse {
 
 @Injectable({ providedIn: 'root' })
 export class LeadsService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   getRunningLoans(): Observable<RunningLoan[]> {
-    return this.http.get<RunningLoan[]>(`${environment.apiUrl}/leads/running`);
+    const token = this.authService.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.get<RunningLoan[]>(`${environment.apiUrl}/leads/running`, { headers }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   getCompletedLoans(): Observable<CompletedLoan[]> {
-    return this.http.get<CompletedLoan[]>(`${environment.apiUrl}/leads/completed`);
+    const token = this.authService.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.get<CompletedLoan[]>(`${environment.apiUrl}/leads/completed`, { headers }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   addRunningLoan(loan: Omit<RunningLoan, 'id' | 'created_at' | 'updated_at'>): Observable<RunningLoan> {
-    return this.http.post<RunningLoan>(`${environment.apiUrl}/leads/running`, loan);
+    const token = this.authService.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.post<RunningLoan>(`${environment.apiUrl}/leads/running`, loan, { headers });
   }
 
   addCompletedLoan(loan: Omit<CompletedLoan, 'id' | 'created_at' | 'updated_at'>): Observable<CompletedLoan> {
-    return this.http.post<CompletedLoan>(`${environment.apiUrl}/leads/completed`, loan);
+    const token = this.authService.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.post<CompletedLoan>(`${environment.apiUrl}/leads/completed`, loan, { headers });
   }
 
   deleteRunningLoan(id: string): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}/leads/running/${id}`);
+    const token = this.authService.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.delete<void>(`${environment.apiUrl}/leads/running/${id}`, { headers });
   }
 
   deleteCompletedLoan(id: string): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}/leads/completed/${id}`);
+    const token = this.authService.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.delete<void>(`${environment.apiUrl}/leads/completed/${id}`, { headers });
   }
 
   uploadExcel(file: File): Observable<ExcelUploadResponse> {
+    const token = this.authService.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<ExcelUploadResponse>(`${environment.apiUrl}/leads/upload`, formData);
+    return this.http.post<ExcelUploadResponse>(`${environment.apiUrl}/leads/upload`, formData, { headers });
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('LeadsService error:', error);
+    return throwError(error);
   }
 }

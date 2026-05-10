@@ -11,3 +11,23 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+
+staticSites:
+  - type: web
+    name: loan-leads-frontend
+    env: static
+    buildCommand: cd frontend && npm install && ng build --configuration production
+    staticPublishPath: frontend/dist/loan-leads-frontend/browser
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NG_APP_ENV
+        fromService:
+          name: loan-leads-backend
+          envVarKey: RENDER_SERVICE_URL
