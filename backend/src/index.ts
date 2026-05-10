@@ -29,33 +29,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// When startCommand is "cd backend && npm start", cwd = /opt/render/project/src/backend
-// __dirname = /opt/render/project/src/backend/dist
-// Frontend is at /opt/render/project/src/frontend/dist/loan-leads-frontend/browser
-// From __dirname: go up 2 levels to src, then down to frontend/dist/loan-leads-frontend/browser
-
-let frontendPath = path.join(__dirname, '..', '..', 'frontend', 'dist', 'loan-leads-frontend', 'browser');
-console.log('Trying frontend path:', frontendPath);
-
-if (!fs.existsSync(path.join(frontendPath, 'index.html'))) {
-  // Try alternate - when copied to backend/dist/frontend
-  frontendPath = path.join(__dirname, 'frontend', 'browser');
-  console.log('Trying alternate:', frontendPath);
-}
-
-if (!fs.existsSync(path.join(frontendPath, 'index.html'))) {
-  // Fallback - check parent of backend
-  frontendPath = path.join(__dirname, '..', 'frontend', 'browser');
-  console.log('Trying parent:', frontendPath);
-}
-
-if (!fs.existsSync(path.join(frontendPath, 'index.html'))) {
-  // Last try - frontend/browser in parent
-  frontendPath = path.join(process.cwd(), '..', 'frontend', 'dist', 'loan-leads-frontend', 'browser');
-  console.log('Trying cwd parent:', frontendPath);
-}
-
-console.log('Using frontend path:', frontendPath);
+// Frontend is copied to backend/dist/frontend by build command
+// __dirname = backend/dist, so frontend is at __dirname + frontend/browser
+const frontendPath = path.join(__dirname, 'frontend', 'browser');
+console.log('Frontend path:', frontendPath);
 console.log('index.html exists:', fs.existsSync(path.join(frontendPath, 'index.html')));
 
 app.use(express.static(frontendPath));
