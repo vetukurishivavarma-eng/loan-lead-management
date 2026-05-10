@@ -2,7 +2,9 @@ services:
   - type: web
     name: loan-leads-backend
     env: node
-    buildCommand: cd backend && npm install && npm run build && cd ../frontend && npm install && npm install && ng build --configuration production && cp -r dist/loan-leads-frontend/browser ../backend/dist/frontend
+    buildCommand: |
+      cd frontend && npm install && ng build --configuration production && cd ../backend && npm install && npm run build
+      mkdir -p backend/dist/frontend && cp -r frontend/dist/loan-leads-frontend/browser backend/dist/frontend
     startCommand: cd backend && npm start
     envVars:
       - key: SUPABASE_URL

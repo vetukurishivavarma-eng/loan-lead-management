@@ -30,10 +30,10 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
-app.use(express.static(path.join(__dirname, '../../frontend/dist/loan-leads-frontend/browser')));
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dist/loan-leads-frontend/browser/index.html'));
+  res.sendFile(path.join(__dirname, 'frontend/index.html'));
 });
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
