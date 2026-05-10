@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
 import authRoutes from './routes/auth.routes';
 import leadsRoutes from './routes/leads.routes';
 
@@ -27,6 +28,12 @@ app.get('/health', (req, res) => {
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.log(`${req.method} ${req.path} - Auth: ${req.headers.authorization?.substring(0, 20) || 'none'}...`);
   next();
+});
+
+app.use(express.static(path.join(__dirname, '../../frontend/dist/loan-leads-frontend/browser')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dist/loan-leads-frontend/browser/index.html'));
 });
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
