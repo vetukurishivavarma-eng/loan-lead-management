@@ -32,12 +32,16 @@ export interface CompletedLoan {
 }
 
 export const getRunningLoans = async (): Promise<RunningLoan[]> => {
+  console.log('Supabase URL:', process.env.SUPABASE_URL);
   const { data, error } = await supabase
     .from('running_loans')
     .select('*')
     .order('sno', { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Supabase error:', error);
+    throw error;
+  }
   return data || [];
 };
 
