@@ -30,10 +30,13 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
-app.use(express.static(path.join(__dirname, 'frontend')));
+app.use(express.static(path.join(__dirname, 'frontend/browser')));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend/index.html'));
+  if (req.path.startsWith('/api/') || req.path === '/health') {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.sendFile(path.join(__dirname, 'frontend/browser/index.html'));
 });
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
