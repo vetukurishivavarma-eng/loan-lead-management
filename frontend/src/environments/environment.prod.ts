@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://loan-leads-backend.onrender.com/api'
+  apiUrl: 'https://loan-lead-management.onrender.com/api'
 };
