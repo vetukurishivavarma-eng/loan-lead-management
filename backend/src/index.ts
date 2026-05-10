@@ -11,6 +11,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Debug: log the directory
+console.log('__dirname:', __dirname);
+
 app.use(helmet());
 app.use(cors({
   origin: ['http://localhost:4200', 'http://localhost:3000', 'https://loan-lead-management.onrender.com', 'https://loan-lead-management.netlify.app', process.env.FRONTEND_URL].filter(Boolean) as string[],
@@ -30,13 +33,16 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
-app.use(express.static(path.join(__dirname, 'frontend/browser')));
+const frontendPath = path.join(__dirname, 'frontend', 'browser');
+console.log('Frontend path:', frontendPath);
+
+app.use(express.static(frontendPath));
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/') || req.path === '/health') {
     return res.status(404).json({ error: 'Not found' });
   }
-  res.sendFile(path.join(__dirname, 'frontend/browser/index.html'));
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
